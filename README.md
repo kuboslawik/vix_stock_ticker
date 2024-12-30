@@ -24,12 +24,14 @@ Wiring between ESP32 and button
  - LEG1 -> GND
  - LEG2 -> D13
 
+USB-C is used for power delivery.
+
 # Code
 
 Due to this particular VIX values being used only by certain Marker Makers (MM) brokers and not in financial APIs, they are obtained by reading data directly from webiste in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>ssid</code> and <code>password</code> variables must be supplemented.
 
 # STL Model
 
-Case consist of two parts, main case and back panel. Switch is pressfitted into back panel. Gap over the screen cut-out can be hard to print without sagging, it is advised to print this part with supports enabled.
+Case consists of two parts, main case and back panel. Switch is pressfitted into back panel. Gap over the screen cut-out can be hard to print without sagging, it is advised to print this part with supports enabled.
 ![stl_part_front](assets/stl_image_front.png)
 ![stl_part_back](assets/stl_image_back.png)
