@@ -17,6 +17,7 @@ PINOUT ESP32 -> BUTTON
 // Network libraries
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
 
 // Graphic libraries
 #include <Adafruit_GFX.h>
@@ -51,11 +52,12 @@ int low_price_index;
 
 // Site to get data
 String serverPath = "https://www.plus500.com/pl/instruments/vix/";
+String timeApiPath = "https://timeapi.io/api/time/current/zone?timeZone=Europe%2FWarsaw";
 
 // LCD intialization
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 const int backlightPin = 12;
-bool backlightState = 1;
+bool backlightState = 0;
 const int buttonPin = 13;
 const int longPressDuration = 1000;
 unsigned long buttonPressStartTime = 0;
@@ -64,21 +66,44 @@ uint16_t w, h;
 
 // Internal timer
 unsigned long lastTime = 0;
+unsigned long lastTimeHour = 0;
 unsigned long timerDelay = 30000;
+unsigned long timerDelayHour = 1800000;
+int currentHour = 8;
+String currentDay = "Monday";
 
 void setup() {
-  Serial.begin(115200);
+  // Serial.begin(115200);
   pinMode(buttonPin, INPUT_PULLUP);
   pinMode(backlightPin, OUTPUT);
-  digitalWrite(backlightPin, HIGH);
+  digitalWrite(backlightPin, LOW);
 
   setup_lcd();
   setup_wifi();
+  get_time(true);
+
+  if (
+    currentHour > 6 
+    and currentHour < 22
+    and (currentDay == "Monday" || currentDay == "Tuesday" || currentDay == "Wednesday" || currentDay == "Thursday" || currentDay ==  "Friday")
+  ) {
+    if (backlightState == 0) {
+      Serial.println("wlacz");
+      digitalWrite(backlightPin, HIGH);
+      backlightState = 1;
+    }
+  } else {
+    if (backlightState == 1) {
+      Serial.println("wylacz");
+      digitalWrite(backlightPin, LOW);
+      backlightState = 0;
+    }
+  }
 }
 
 void loop() {
 
-  get_vix();
+  get_time(false);
 
   int reading = digitalRead(buttonPin);
 
@@ -100,6 +125,26 @@ void loop() {
     }
   } else {
     buttonPressStartTime = 0;
+  }
+
+  if (
+    currentHour > 6 
+    and currentHour < 22
+    and (currentDay == "Monday" || currentDay == "Tuesday" || currentDay == "Wednesday" || currentDay == "Thursday" || currentDay ==  "Friday")
+  ) {
+    if (backlightState == 0) {
+      digitalWrite(backlightPin, HIGH);
+      backlightState = 1;
+    }
+  } else {
+    if (backlightState == 1) {
+      digitalWrite(backlightPin, LOW);
+      backlightState = 0;
+    }
+  }
+
+  if (backlightState == 1){
+    get_vix();
   }
 }
 
@@ -135,6 +180,8 @@ void get_vix(){
       http.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36");
       
       int httpResponseCode = http.GET();
+
+      // Serial.println(httpResponseCode);
       
       if (httpResponseCode == 200) {
         String payload = http.getString();
@@ -165,75 +212,111 @@ void get_vix(){
         low_price = low_price.substring(low_price.indexOf(">")+1, low_price.indexOf("<"));
       }
       else {
-        Serial.print("Error code: ");
-        Serial.println(httpResponseCode);
+        // Serial.print("Error code vix_get: ");
+        // Serial.println(httpResponseCode);
       }
 
       // Free resources
       http.end();
-      
-      //Buy banner
-      tft.drawRect(0, 35, 54, 40, ST77XX_GREEN);
-      tft.fillRect(0, 35, 54, 40, ST77XX_GREEN);
-      tft.drawTriangle(54, 35, 54, 74, 93, 35, ST77XX_GREEN);
-      tft.fillTriangle(54, 35, 54, 74, 93, 35, ST77XX_GREEN);
 
-      //Sell banner
-      tft.drawRect(74, 70, 54, 40, ST77XX_RED);
-      tft.fillRect(74, 70, 54, 40, ST77XX_RED);
-      tft.drawTriangle(73, 70, 73, 109, 34, 109, ST77XX_RED);
-      tft.fillTriangle(73, 70, 73, 109, 34, 109, ST77XX_RED);
-
-      tft.drawRect(0, 115, 128, 45, ST77XX_BLACK);
-      tft.fillRect(0, 115, 128, 45, ST77XX_BLACK);     
-
-      tft.setFont(&FreeSansBold12pt7b);
-
-      //Buy price
-      tft.getTextBounds(buy_price.c_str(), 0, 0, &x, &y, &w, &h);
-      tft.setCursor((tft.width()/2 - w) / 2, 35+h+((40-h)/2));
-      tft.print(buy_price.c_str());
-
-      //Sell price
-      tft.getTextBounds(sell_price.c_str(), 0, 0, &x, &y, &w, &h);
-      tft.setCursor(tft.width()/2 + (tft.width()/2 - w)/2-3, 109-(40-h)/2);
-      tft.print(sell_price.c_str());
-
-      //Change
-      if (change.indexOf("-") == 0) {
-        tft.setTextColor(ST77XX_RED);
-      } else if (change == "0.00%") {
-        tft.setTextColor(ST77XX_WHITE);
+      // Check if there is no garbage text
+      if (buy_price.length() > 5 || sell_price.length() > 5) {
+        return;
       } else {
-        tft.setTextColor(ST77XX_GREEN);
+        //Buy banner
+        tft.drawRect(0, 35, 54, 40, ST77XX_GREEN);
+        tft.fillRect(0, 35, 54, 40, ST77XX_GREEN);
+        tft.drawTriangle(54, 35, 54, 74, 93, 35, ST77XX_GREEN);
+        tft.fillTriangle(54, 35, 54, 74, 93, 35, ST77XX_GREEN);
+
+        //Sell banner
+        tft.drawRect(74, 70, 54, 40, ST77XX_RED);
+        tft.fillRect(74, 70, 54, 40, ST77XX_RED);
+        tft.drawTriangle(73, 70, 73, 109, 34, 109, ST77XX_RED);
+        tft.fillTriangle(73, 70, 73, 109, 34, 109, ST77XX_RED);
+
+        tft.drawRect(0, 115, 128, 45, ST77XX_BLACK);
+        tft.fillRect(0, 115, 128, 45, ST77XX_BLACK);     
+
+        tft.setFont(&FreeSansBold12pt7b);
+
+        //Buy price
+        tft.getTextBounds(buy_price.c_str(), 0, 0, &x, &y, &w, &h);
+        tft.setCursor((tft.width()/2 - w) / 2, 35+h+((40-h)/2));
+        tft.print(buy_price.c_str());
+
+        //Sell price
+        tft.getTextBounds(sell_price.c_str(), 0, 0, &x, &y, &w, &h);
+        tft.setCursor(tft.width()/2 + (tft.width()/2 - w)/2-3, 109-(40-h)/2);
+        tft.print(sell_price.c_str());
+
+        //Change
+        if (change.indexOf("-") == 0) {
+          tft.setTextColor(ST77XX_RED);
+        } else if (change == "0.00%") {
+          tft.setTextColor(ST77XX_WHITE);
+        } else {
+          tft.setTextColor(ST77XX_GREEN);
+        }
+        tft.getTextBounds(change.c_str(), 0, 0, &x, &y, &w, &h);
+        tft.setCursor((tft.width() - w) / 2, 135);
+        tft.print(change.c_str());
+        tft.setTextColor(ST77XX_WHITE);
+
+        tft.setFont();
+
+        //High text
+        tft.setFont();
+        tft.setCursor(3, 140);
+        tft.print("HIGH");
+
+        //Low text
+        tft.setCursor(108, 140);
+        tft.print("LOW");  
+
+        //High Value
+        tft.setCursor(2, 150);
+        tft.print(high_price.c_str());
+
+        //Low Value
+        tft.getTextBounds(low_price.c_str(), 0, 0, &x, &y, &w, &h);
+        tft.setCursor(tft.width()-w-1, 150);
+        tft.print(low_price.c_str());
       }
-      tft.getTextBounds(change.c_str(), 0, 0, &x, &y, &w, &h);
-      tft.setCursor((tft.width() - w) / 2, 135);
-      tft.print(change.c_str());
-      tft.setTextColor(ST77XX_WHITE);
-
-      tft.setFont();
-
-      //High text
-      tft.setFont();
-      tft.setCursor(3, 140);
-      tft.print("HIGH");
-
-      //Low text
-      tft.setCursor(108, 140);
-      tft.print("LOW");  
-
-      //High Value
-      tft.setCursor(2, 150);
-      tft.print(high_price.c_str());
-
-      //Low Value
-      tft.getTextBounds(low_price.c_str(), 0, 0, &x, &y, &w, &h);
-      tft.setCursor(tft.width()-w-1, 150);
-      tft.print(low_price.c_str());
     } else {
       WiFi.reconnect();
     }
     lastTime = millis();
+  }
+}
+
+void get_time(bool force){
+  if (((millis() - lastTimeHour) > timerDelayHour) || force == true) {
+      if(WiFi.status()== WL_CONNECTED) {
+        HTTPClient http;
+
+        http.begin(timeApiPath.c_str());
+        http.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36");
+        
+        int httpResponseCode = http.GET();
+
+        // Serial.println(httpResponseCode);
+        
+        if (httpResponseCode == 200) {
+          String payload = http.getString();
+
+          StaticJsonDocument<200> payloadJSON;
+          DeserializationError error = deserializeJson(payloadJSON, payload);
+
+          if (error) {
+            return;
+          }
+
+          currentHour = payloadJSON["hour"];
+          const char* day = payloadJSON["dayOfWeek"];
+          currentDay = day;
+      }
+    }
+    lastTimeHour = millis();
   }
 }

@@ -1,5 +1,5 @@
 # VIX ESP32 Ticker
-ESP32 based VIX ticker with LCD display
+ESP32 based VIX ticker with LCD display. Supports automatic screen off based on time and day.
 ![VIX ESP32 Ticker](assets/vix_ticker_photo.jpg)
 
 # Requirements
