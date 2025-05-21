@@ -28,7 +28,7 @@ USB-C is used for power delivery.
 
 # Code
 
-Due to this particular VIX values being used only by certain Marker Makers (MM) brokers and not in financial APIs, they are obtained by reading data directly from webiste in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>ssid</code> and <code>password</code> variables must be supplemented. Push button for 1 second do disable LCD screen without powering off devie.
+Providing any suitable API in <code>VIX_API</code> constants, chosen ticker is displayed on display in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>SSID</code> and <code>PASSWORD</code> variables must be supplemented. Push button for 1 second do disable LCD screen without powering off devie.
 
 # STL Model
 
