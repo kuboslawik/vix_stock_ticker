@@ -45,6 +45,7 @@ String timeApiPath = "https://timeapi.io/api/time/current/zone?timeZone=Europe%2
 // LCD intialization
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 const int backlightPin = 12;
+const int backlightBrightness = map(30, 0, 100, 0 , 255);
 bool backlightState = 0;
 const int buttonPin = 13;
 const int longPressDuration = 1000;
@@ -228,11 +229,17 @@ void get_time(bool force){
   if (((millis() - lastTimeHour) > timerDelayHour) || force == true) {
     if(WiFi.status()== WL_CONNECTED) {
       HTTPClient http;
+      int retryNumber = 0;
+      int httpResponseCode = 0;
 
       http.begin(timeApiPath.c_str());
       http.addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36");
       
-      int httpResponseCode = http.GET();
+      do {
+        retryNumber += 1;
+        httpResponseCode = http.GET();
+      } while (httpResponseCode != 200 or retryNumber < 5);
+
 
       #ifdef DEBUG_MODE
       Serial.println(httpResponseCode);
@@ -289,7 +296,7 @@ void update_backlight_state() {
     (currentDay == "Monday" || currentDay == "Tuesday" || currentDay == "Wednesday" || currentDay == "Thursday" || currentDay == "Friday")
   ) {
     if (backlightState == 0) {
-      digitalWrite(backlightPin, HIGH);
+      analogWrite(backlightPin, backlightBrightness);
       backlightState = 1;
     }
   } else {

@@ -28,7 +28,7 @@ USB-C is used for power delivery.
 
 # Code
 
-Providing any suitable API in <code>VIX_API</code> constants, chosen ticker is displayed on display in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>SSID</code> and <code>PASSWORD</code> variables must be supplemented. Push button for 1 second do disable LCD screen without powering off devie.
+Providing any suitable API in <code>VIX_API</code> constants, chosen ticker is displayed on display in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>SSID</code> and <code>PASSWORD</code> variables must be supplemented. Push button for 1 second do disable LCD screen without powering off device. Edit first argument of <code>backlightBrightness</code> to set backlight intensity between 0 and 100 percent.
 
 # STL Model
 
