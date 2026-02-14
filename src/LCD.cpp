@@ -108,19 +108,19 @@ void updateLCD(){
 }
 
 void updateBacklightState(bool firstRun) {
-  if (((millis() - backlightStateTimer) > backlightStateTimerDelay && vixState.backlightStateOverride == false) || firstRun) {
+  if (((millis() - backlightStateTimer) > backlightStateTimerDelay && !vixState.backlightStateOverride) || firstRun) {
     getLocalTime(&vixState.timeContainer);
     if (
         vixState.timeContainer.tm_hour > 6 && vixState.timeContainer.tm_hour < 22 &&
         (vixState.timeContainer.tm_wday == 1 || vixState.timeContainer.tm_wday == 2 || vixState.timeContainer.tm_wday == 3 || vixState.timeContainer.tm_wday == 4 || vixState.timeContainer.tm_wday == 5)
     ) {
-        if (vixState.backlightState == false) {
+        if (!vixState.backlightState) {
         analogWrite(TFT_BCL, backlightBrightness);
         vixState.backlightState = true;
         DEBUG_PRINTLN("Backlight ON");
         }
     } else {
-        if (vixState.backlightState == true) {
+        if (vixState.backlightState) {
         digitalWrite(TFT_BCL, LOW);
         vixState.backlightState = false;
         DEBUG_PRINTLN("Backlight OFF");
@@ -131,7 +131,7 @@ void updateBacklightState(bool firstRun) {
 }
 
 void updateButtonState() {
-  bool isPressed = (digitalRead(TFT_BTN) == LOW);
+  bool isPressed = (!digitalRead(TFT_BTN));
   static bool longPressHandled = false;
   static unsigned long pressStartTime = 0;
   if (isPressed) {
