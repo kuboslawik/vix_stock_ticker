@@ -8,26 +8,27 @@
 
 // LCD Pin definition
 #define TFT_CS 2
+#define TFT_BCL 12
+#define TFT_BTN 13
 #define TFT_DC 15
 #define TFT_RST 16
 
 // LCD intialization
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-const int backlightPin = 12;
-const int backlightBrightness = map(30, 0, 100, 0 , 255);
-const int buttonPin = 13;
-const int longPressDuration = 1000;
-unsigned long buttonPressStartTime = 0;
+const int backlightBrightness = map(10, 0, 100, 0 , 255);
 int16_t x, y;
 uint16_t w, h;
 
-unsigned long backlightStateTimer = 1800001;
-unsigned long backlightStateTimerDelay = 1800000;
+unsigned long buttonPressStartTime = 0;
+const int longPressDuration = 1000;
+
+unsigned long backlightStateTimer = 0;
+unsigned long backlightStateTimerDelay = 300000;
 
 void setupLCD() {
-    pinMode(buttonPin, INPUT_PULLUP);
-    pinMode(backlightPin, OUTPUT);
-    digitalWrite(backlightPin, LOW);
+    pinMode(TFT_BTN, INPUT_PULLUP);
+    pinMode(TFT_BCL, OUTPUT);
+    analogWrite(TFT_BCL, LOW);
 
     tft.initR(INITR_BLACKTAB);
     tft.fillScreen(ST77XX_BLACK);
@@ -106,21 +107,23 @@ void updateLCD(){
     tft.print(vixState.lowPrice.c_str());
 }
 
-void updateBacklightState() {
-  if ((millis() - backlightStateTimer) > backlightStateTimerDelay) {
-    getLocalTime(&timeContainer);
+void updateBacklightState(bool firstRun) {
+  if (((millis() - backlightStateTimer) > backlightStateTimerDelay && vixState.backlightStateOverride == false) || firstRun) {
+    getLocalTime(&vixState.timeContainer);
     if (
-        timeContainer.tm_hour > 6 && timeContainer.tm_hour < 22 &&
-        (timeContainer.tm_wday == 1 || timeContainer.tm_wday == 2 || timeContainer.tm_wday == 3 || timeContainer.tm_wday == 4 || timeContainer.tm_wday == 5)
+        vixState.timeContainer.tm_hour > 6 && vixState.timeContainer.tm_hour < 22 &&
+        (vixState.timeContainer.tm_wday == 1 || vixState.timeContainer.tm_wday == 2 || vixState.timeContainer.tm_wday == 3 || vixState.timeContainer.tm_wday == 4 || vixState.timeContainer.tm_wday == 5)
     ) {
         if (vixState.backlightState == false) {
-        analogWrite(backlightPin, backlightBrightness);
+        analogWrite(TFT_BCL, backlightBrightness);
         vixState.backlightState = true;
+        DEBUG_PRINTLN("Backlight ON");
         }
     } else {
         if (vixState.backlightState == true) {
-        digitalWrite(backlightPin, LOW);
+        digitalWrite(TFT_BCL, LOW);
         vixState.backlightState = false;
+        DEBUG_PRINTLN("Backlight OFF");
         }
     }
     backlightStateTimer = millis();
@@ -128,17 +131,17 @@ void updateBacklightState() {
 }
 
 void updateButtonState() {
-  bool isPressed = (digitalRead(buttonPin) == LOW);
+  bool isPressed = (digitalRead(TFT_BTN) == LOW);
   static bool longPressHandled = false;
   static unsigned long pressStartTime = 0;
-
   if (isPressed) {
     if (pressStartTime == 0) { 
       pressStartTime = millis();
     }
     if (millis() - pressStartTime >= longPressDuration && !longPressHandled) {
       vixState.backlightState = !vixState.backlightState;
-      analogWrite(backlightPin, vixState.backlightState ? backlightBrightness : 0);
+      vixState.backlightStateOverride = !vixState.backlightState;
+      analogWrite(TFT_BCL, vixState.backlightState ? backlightBrightness : 0);
       longPressHandled = true;
     }
   } else {

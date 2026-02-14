@@ -37,10 +37,10 @@ struct VixState {
     String highPrice;
     String lowPrice;
     bool backlightState;
+    bool backlightStateOverride;
+    tm timeContainer;
 };
 
 extern VixState vixState;
-
-extern struct tm timeContainer;
 
 #endif

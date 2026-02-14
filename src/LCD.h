@@ -5,7 +5,7 @@ extern bool backlightState;
 
 void setupLCD();
 void updateLCD();
-void updateBacklightState();
+void updateBacklightState(bool);
 void updateButtonState();
 
 #endif

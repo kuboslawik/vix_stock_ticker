@@ -7,8 +7,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-VixState vixState = {"0.00%", "0.00", "0.00", "0.00", "0.00", false};
-tm timeContainer;
+VixState vixState = {"0.00%", "0.00", "0.00", "0.00", "0.00", false, false};
 
 // Site to get data
 String tickerDataPath = "https://www.plus500.com/pl/api/LiveData/FeedUpdate?instrumentID=3468";
@@ -25,7 +24,7 @@ void setup() {
 
   setupLCD();
   while (!setupWifiAndTime()) delay(500);
-  updateBacklightState();
+  updateBacklightState(true);
 }
 
 void getVix(){
@@ -79,10 +78,8 @@ void getVix(){
 
 void loop() {
   updateButtonState();
-  updateBacklightState();
+  updateBacklightState(false);
   if (vixState.backlightState){
     getVix();
   }
-  DEBUG_PRINTLN(vixState.backlightState);
-  DEBUG_PRINTLN(timeContainer.tm_wday);
 }
