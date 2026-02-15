@@ -28,7 +28,7 @@ unsigned long backlightStateTimerDelay = 300000;
 void setupLCD() {
     pinMode(TFT_BTN, INPUT_PULLUP);
     pinMode(TFT_BCL, OUTPUT);
-    analogWrite(TFT_BCL, LOW);
+    analogWrite(TFT_BCL, backlightBrightness);
 
     tft.initR(INITR_BLACKTAB);
     tft.fillScreen(ST77XX_BLACK);
@@ -121,7 +121,7 @@ void updateBacklightState(bool firstRun) {
         }
     } else {
         if (vixState.backlightState) {
-        digitalWrite(TFT_BCL, LOW);
+        analogWrite(TFT_BCL, 0);
         vixState.backlightState = false;
         DEBUG_PRINTLN("Backlight OFF");
         }

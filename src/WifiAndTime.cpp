@@ -28,6 +28,14 @@ static bool setupWiFi() {
     WiFi.mode(WIFI_STA); 
 
     WiFiManager wm;
+    wm.setConnectTimeout(60); 
+    wm.setConfigPortalTimeout(180); 
+
+    if (!wm.autoConnect("Auto_Lampa_AP")) {
+        DEBUG_PRINTLN("Portal timeout, restarting device");
+        ESP.restart();
+    }
+
     wm.autoConnect("vixStockTickerAP");
 
     DEBUG_PRINTLN("");
