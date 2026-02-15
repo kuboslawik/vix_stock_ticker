@@ -28,7 +28,7 @@ USB-C is used for power delivery.
 
 # Code
 
-Providing any suitable API in <code>VIX_API</code> constants, chosen ticker is displayed on display in intervals specified in <code>timerDelay</code> variable. To connect to your WiFi <code>SSID</code> and <code>PASSWORD</code> variables must be supplemented. Push button for 1 second do disable LCD screen without powering off device. Edit first argument of <code>backlightBrightness</code> to set backlight intensity between 0 and 100 percent.
+Providing any suitable API path in <code>tickerDataPath</code> variable, chosen ticker is displayed on display in intervals specified in <code>vixTimerDelay</code> variable. Connecting to your WiFi is handled via WiFiManager library, that creates anonymous vixStockTickerAP access point to which you connect and configure your credentials. Push button for 1 second do disable LCD screen without powering off device. Edit sixth argument of <code>vixState</code> variable to set backlight intensity between 0 and 100 percent, default is set to 10.
 
 # STL Model
 

@@ -7,7 +7,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-VixState vixState = {"0.00%", "0.00", "0.00", "0.00", "0.00", false, false};
+VixState vixState = {"0.00%", "0.00", "0.00", "0.00", "0.00", 10, false, false};
 
 // Site to get data
 String tickerDataPath = "https://www.plus500.com/pl/api/LiveData/FeedUpdate?instrumentID=3468";

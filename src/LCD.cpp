@@ -1,5 +1,5 @@
-#include "LCD.h"
 #include "header.h"
+#include "LCD.h"
 
 // Graphic libraries
 #include <Adafruit_GFX.h>
@@ -15,7 +15,7 @@
 
 // LCD intialization
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
-const int backlightBrightness = map(10, 0, 100, 0 , 255);
+const int backlightBrightness = map(vixState.backlightBrightness, 0, 100, 0 , 255);
 int16_t x, y;
 uint16_t w, h;
 

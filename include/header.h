@@ -36,6 +36,7 @@ struct VixState {
     String change;
     String highPrice;
     String lowPrice;
+    int backlightBrightness;
     bool backlightState;
     bool backlightStateOverride;
     tm timeContainer;
