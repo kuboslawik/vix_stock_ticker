@@ -23,7 +23,7 @@ unsigned long buttonPressStartTime = 0;
 const int longPressDuration = 1000;
 
 unsigned long backlightStateTimer = 0;
-unsigned long backlightStateTimerDelay = 300000;
+unsigned long backlightStateTimerDelay = 30000;
 
 void setupLCD() {
     pinMode(TFT_BTN, INPUT_PULLUP);
@@ -112,7 +112,7 @@ void updateBacklightState(bool firstRun) {
     getLocalTime(&vixState.timeContainer);
     if (
         vixState.timeContainer.tm_hour > 6 && vixState.timeContainer.tm_hour < 22 &&
-        (vixState.timeContainer.tm_wday == 1 || vixState.timeContainer.tm_wday == 2 || vixState.timeContainer.tm_wday == 3 || vixState.timeContainer.tm_wday == 4 || vixState.timeContainer.tm_wday == 5)
+        vixState.timeContainer.tm_wday >= 1 && vixState.timeContainer.tm_wday <= 5
     ) {
         if (!vixState.backlightState) {
         analogWrite(TFT_BCL, backlightBrightness);
@@ -140,7 +140,11 @@ void updateButtonState() {
     }
     if (millis() - pressStartTime >= longPressDuration && !longPressHandled) {
       vixState.backlightState = !vixState.backlightState;
-      vixState.backlightStateOverride = !vixState.backlightState;
+      if (vixState.backlightState) {
+        vixState.backlightStateOverride = false;
+      } else {
+        vixState.backlightStateOverride = true;
+      }
       analogWrite(TFT_BCL, vixState.backlightState ? backlightBrightness : 0);
       longPressHandled = true;
     }
