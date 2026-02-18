@@ -31,12 +31,10 @@ static bool setupWiFi() {
     wm.setConnectTimeout(60); 
     wm.setConfigPortalTimeout(180); 
 
-    if (!wm.autoConnect("Auto_Lampa_AP")) {
+    if (!wm.autoConnect("vixStockTickerAP")) {
         DEBUG_PRINTLN("Portal timeout, restarting device");
         ESP.restart();
     }
-
-    wm.autoConnect("vixStockTickerAP");
 
     DEBUG_PRINTLN("");
     DEBUG_PRINT("Connected! IP: ");
